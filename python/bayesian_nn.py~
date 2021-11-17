@@ -1,10 +1,9 @@
+import theano.tensor as T
+import theano
+import numpy as np
+from scipy.spatial.distance import pdist, squareform
 import random
 import time
-
-import numpy as np
-import theano
-import theano.tensor as T
-from scipy.spatial.distance import pdist, squareform
 from tqdm import tqdm
 
 '''
@@ -175,21 +174,21 @@ class svgd_bayesnn:
             '''
                 Model selection by using a development set
             '''
-            # X_dev = self.normalization(X_dev)
-            # val = [0 for _ in range(self.M)]
-            # for i in range(self.M):
-            #     w1, b1, w2, b2, loggamma, loglambda = self.unpack_weights(self.theta[i, :])
-            #     pred_y_dev = self.nn_predict(X_dev, w1, b1, w2, b2) * self.std_y_train + self.mean_y_train
-            #     # likelihood
-            #     def f_log_lik(loggamma): return np.sum(np.log(np.sqrt(np.exp(loggamma)) / np.sqrt(2 * np.pi)
-            #                                                   * np.exp(-1 * (np.power(pred_y_dev - y_dev, 2) / 2) * np.exp(loggamma))))
-            #     # The higher probability is better
-            #     lik1 = f_log_lik(loggamma)
-            #     # one heuristic setting
-            #     loggamma = -np.log(np.mean(np.power(pred_y_dev - y_dev, 2)))
-            #     lik2 = f_log_lik(loggamma)
-            #     if lik2 > lik1:
-            #         self.theta[i, -2] = loggamma  # update loggamma
+            X_dev = self.normalization(X_dev)
+            val = [0 for _ in range(self.M)]
+            for i in range(self.M):
+                w1, b1, w2, b2, loggamma, loglambda = self.unpack_weights(self.theta[i, :])
+                pred_y_dev = self.nn_predict(X_dev, w1, b1, w2, b2) * self.std_y_train + self.mean_y_train
+                # likelihood
+                def f_log_lik(loggamma): return np.sum(np.log(np.sqrt(np.exp(loggamma)) / np.sqrt(2 * np.pi)
+                                                              * np.exp(-1 * (np.power(pred_y_dev - y_dev, 2) / 2) * np.exp(loggamma))))
+                # The higher probability is better
+                lik1 = f_log_lik(loggamma)
+                # one heuristic setting
+                loggamma = -np.log(np.mean(np.power(pred_y_dev - y_dev, 2)))
+                lik2 = f_log_lik(loggamma)
+                if lik2 > lik1:
+                    self.theta[i, -2] = loggamma  # update loggamma
 
     def normalization(self, X, y=None):
         X = (X - np.full(X.shape, self.mean_X_train)) / \
